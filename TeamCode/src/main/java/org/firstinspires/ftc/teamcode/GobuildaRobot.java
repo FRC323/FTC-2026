@@ -384,7 +384,7 @@ public class GobuildaRobot extends OpMode {
             case LAUNCH:
                 //rightFeeder.setPower(FULL_SPEED);
                 rightFeederTimer.reset();
-                rightFeeder.setPosition(.45);
+                rightFeeder.setPosition(.35);
                 rightLaunchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
