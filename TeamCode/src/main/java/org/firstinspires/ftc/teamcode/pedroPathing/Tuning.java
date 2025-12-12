@@ -130,7 +130,7 @@ public class Tuning extends SelectableOpMode {
 class LocalizationTest extends OpMode {
     @Override
     public void init() {
-        follower.setStartingPose(new Pose(72,72));
+        follower.setStartingPose(new Pose(0,0));
     }
 
     /** This initializes the PoseUpdater, the mecanum drive motors, and the Panels telemetry. */
@@ -182,7 +182,7 @@ class LocalizationTest extends OpMode {
  * @version 1.0, 5/6/2024
  */
 class ForwardTuner extends OpMode {
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 6;
 
     @Override
     public void init() {
@@ -330,14 +330,14 @@ class TurnTuner extends OpMode {
  */
 class ForwardVelocityTuner extends OpMode {
     private final ArrayList<Double> velocities = new ArrayList<>();
-    public static double DISTANCE = 48;
+    public static double DISTANCE = 60;
     public static double RECORD_NUMBER = 10;
 
     private boolean end;
 
     @Override
     public void init() {
-        follower.setStartingPose(new Pose(72, 72));
+        follower.setStartingPose(new Pose(0, 0));
     }
 
     /** This initializes the drive motors as well as the cache of velocities and the Panels telemetry. */
