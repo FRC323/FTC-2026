@@ -384,7 +384,7 @@ public class GobuildaRobot extends OpMode {
             case LAUNCH:
                 //rightFeeder.setPower(FULL_SPEED);
                 rightFeederTimer.reset();
-                rightFeeder.setPosition(.35);
+                rightFeeder.setPosition(.40);
                 rightLaunchState = LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
@@ -395,7 +395,7 @@ public class GobuildaRobot extends OpMode {
                     rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     leftLauncher.setPower(.6);
                     rightLauncher.setPower(.6);
-                    rightFeeder.setPosition(0.18);
+                    rightFeeder.setPosition(0.2);
                 }
                 break;
         }

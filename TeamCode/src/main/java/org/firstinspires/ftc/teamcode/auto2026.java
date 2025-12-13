@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @Autonomous(name = "Test Auto", group = "Examples")
 
 public class auto2026 extends OpMode {
-    final double FEED_TIME_SECONDS = 0.80; //The feeder servos run this long when a shot is requested.
+    final double FEED_TIME_SECONDS = 1.0; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
@@ -157,11 +157,7 @@ public class auto2026 extends OpMode {
         switch (pathState) {
             case 0:
                 follower.followPath(scorePreload);
-                if (pathTimer.getElapsedTimeSeconds() > 5){
-                    launchLeft(true);
-                }
-
-                setPathState(7);
+                setPathState(1);
                 break;
             case 1:
 
@@ -174,10 +170,16 @@ public class auto2026 extends OpMode {
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     /* Score Preload */
-
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup1, true);
-                    setPathState(2);
+                    if (pathTimer.getElapsedTimeSeconds() < 9) {
+                        if(pathTimer.getElapsedTimeSeconds() > 0 && pathTimer.getElapsedTimeSeconds() <2) {
+                        launchLeft(true);}
+                    else if(pathTimer.getElapsedTimeSeconds() >3 && pathTimer.getElapsedTimeSeconds() < 5) {
+                        launchRight(true);}
+                        else if(pathTimer.getElapsedTimeSeconds() > 6 && pathTimer.getElapsedTimeSeconds() < 8){
+                            launchLeft(true);}
+                    } else {
+                        setPathState(2);
+                    }
                 }
                 break;
             case 2:
@@ -198,7 +200,7 @@ public class auto2026 extends OpMode {
 
                     /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
                     follower.followPath(grabPickup2, true);
-                    setPathState(4);
+                    setPathState(8);
                 }
                 break;
             case 4:
@@ -295,15 +297,18 @@ public class auto2026 extends OpMode {
                 leftLaunchState = auto2026.LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
-                if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
-                    leftLaunchState = auto2026.LaunchState.IDLE;
-                    //leftFeeder.setPower(STOP_SPEED);
-                    leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    leftLauncher.setPower(.6);
-                    rightLauncher.setPower(.6);
-                    leftFeeder.setPosition(0.15);
-                }
+               if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
+                   leftLaunchState = auto2026.LaunchState.IDLE;
+                   leftFeeder.setPosition(0.15);
+                   //leftFeeder.setPower(STOP_SPEED);
+                   leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                   rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                   leftLauncher.setPower(.6);
+                   rightLauncher.setPower(.6);
+
+
+
+               }
                 break;
         }
     }
@@ -334,12 +339,15 @@ public class auto2026 extends OpMode {
             case LAUNCHING:
                 if (rightFeederTimer.seconds() > FEED_TIME_SECONDS) {
                     rightLaunchState = auto2026.LaunchState.IDLE;
+                    rightFeeder.setPosition(0.18);
                     //rightFeeder.setPower(STOP_SPEED);
                     leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     leftLauncher.setPower(.6);
                     rightLauncher.setPower(.6);
-                    rightFeeder.setPosition(0.18);
+
+
+
                 }
                 break;
         }
