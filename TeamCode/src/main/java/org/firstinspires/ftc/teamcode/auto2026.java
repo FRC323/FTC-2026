@@ -54,6 +54,7 @@ public class auto2026 extends OpMode {
 
     private enum LaunchState {
         IDLE,
+        IDLE2,
         SPIN_UP,
         LAUNCH,
         LAUNCHING,
@@ -300,14 +301,14 @@ public class auto2026 extends OpMode {
                if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
                    leftLaunchState = auto2026.LaunchState.IDLE;
                    leftFeeder.setPosition(0.15);
+
                    //leftFeeder.setPower(STOP_SPEED);
                    leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                    rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                    leftLauncher.setPower(.6);
                    rightLauncher.setPower(.6);
-
-
-
+               } else {
+                   shotRequested = false;
                }
                 break;
         }
@@ -345,9 +346,8 @@ public class auto2026 extends OpMode {
                     rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     leftLauncher.setPower(.6);
                     rightLauncher.setPower(.6);
-
-
-
+                } else {
+                    shotRequested = false;
                 }
                 break;
         }
