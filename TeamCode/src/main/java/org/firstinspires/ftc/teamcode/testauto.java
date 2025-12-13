@@ -17,9 +17,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(name = "Main Auto", group = "Examples")
-
-public class auto2026 extends OpMode {
+@Autonomous(name = "Test", group = "Examples")
+//this auto is no different from auto2026.java, i was going to test a different auto but didnt get around to it -mylz
+public class testauto extends OpMode {
     final double FEED_TIME_SECONDS = 1.0; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -59,28 +59,28 @@ public class auto2026 extends OpMode {
         LAUNCH,
         LAUNCHING,
     }
-    private auto2026.LaunchState leftLaunchState;
-    private auto2026.LaunchState rightLaunchState;
+    private testauto.LaunchState leftLaunchState;
+    private testauto.LaunchState rightLaunchState;
 
     private enum DiverterDirection {
         LEFT,
         RIGHT
     }
-    private auto2026.DiverterDirection diverterDirection = auto2026.DiverterDirection.LEFT;
+    private testauto.DiverterDirection diverterDirection = testauto.DiverterDirection.LEFT;
 
     private enum IntakeState {
         ON,
         OFF
     }
 
-    private auto2026.IntakeState intakeState = auto2026.IntakeState.OFF;
+    private testauto.IntakeState intakeState = testauto.IntakeState.OFF;
 
     private enum LauncherDistance {
         CLOSE,
         FAR
     }
 
-    private auto2026.LauncherDistance launcherDistance = auto2026.LauncherDistance.CLOSE;
+    private testauto.LauncherDistance launcherDistance = testauto.LauncherDistance.CLOSE;
 
     // Setup a variable for each drive wheel to save power level for telemetry
     double leftFrontPower;
@@ -278,7 +278,7 @@ public class auto2026 extends OpMode {
         switch (leftLaunchState) {
             case IDLE:
                 if (shotRequested) {
-                    leftLaunchState = auto2026.LaunchState.SPIN_UP;
+                    leftLaunchState = testauto.LaunchState.SPIN_UP;
                     leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     leftFeederTimer.reset();
@@ -288,18 +288,18 @@ public class auto2026 extends OpMode {
                 leftLauncher.setVelocity(launcherTarget);
                 rightLauncher.setVelocity(launcherTarget);
                 if (leftLauncher.getVelocity() > launcherMin || leftFeederTimer.seconds() > 3) {
-                    leftLaunchState = auto2026.LaunchState.LAUNCH;
+                    leftLaunchState = testauto.LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
                 //leftFeeder.setPower(FULL_SPEED);
                 leftFeederTimer.reset();
                 leftFeeder.setPosition(.35);
-                leftLaunchState = auto2026.LaunchState.LAUNCHING;
+                leftLaunchState = testauto.LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
-                   leftLaunchState = auto2026.LaunchState.IDLE;
+                   leftLaunchState = testauto.LaunchState.IDLE;
                    leftFeeder.setPosition(0.15);
 
                    //leftFeeder.setPower(STOP_SPEED);
@@ -318,7 +318,7 @@ public class auto2026 extends OpMode {
         switch (rightLaunchState) {
             case IDLE:
                 if (shotRequested) {
-                    rightLaunchState = auto2026.LaunchState.SPIN_UP;
+                    rightLaunchState = testauto.LaunchState.SPIN_UP;
                     leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     rightFeederTimer.reset();
@@ -328,18 +328,18 @@ public class auto2026 extends OpMode {
                 leftLauncher.setVelocity(launcherTarget);
                 rightLauncher.setVelocity(launcherTarget);
                 if (leftLauncher.getVelocity() > launcherMin || rightFeederTimer.seconds() > 3) {
-                    rightLaunchState = auto2026.LaunchState.LAUNCH;
+                    rightLaunchState = testauto.LaunchState.LAUNCH;
                 }
                 break;
             case LAUNCH:
                 //rightFeeder.setPower(FULL_SPEED);
                 rightFeederTimer.reset();
                 rightFeeder.setPosition(.45);
-                rightLaunchState = auto2026.LaunchState.LAUNCHING;
+                rightLaunchState = testauto.LaunchState.LAUNCHING;
                 break;
             case LAUNCHING:
                 if (rightFeederTimer.seconds() > FEED_TIME_SECONDS) {
-                    rightLaunchState = auto2026.LaunchState.IDLE;
+                    rightLaunchState = testauto.LaunchState.IDLE;
                     rightFeeder.setPosition(0.18);
                     //rightFeeder.setPower(STOP_SPEED);
                     leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -357,8 +357,8 @@ public class auto2026 extends OpMode {
      **/
     @Override
     public void init() {
-        leftLaunchState = auto2026.LaunchState.IDLE;
-        rightLaunchState = auto2026.LaunchState.IDLE;
+        leftLaunchState = testauto.LaunchState.IDLE;
+        rightLaunchState = testauto.LaunchState.IDLE;
 
         leftFrontDrive = hardwareMap.get(DcMotor.class, "leftFront");
         rightFrontDrive = hardwareMap.get(DcMotor.class, "rightFront");
