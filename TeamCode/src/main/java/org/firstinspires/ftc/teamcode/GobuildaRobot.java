@@ -49,8 +49,8 @@ public class GobuildaRobot extends OpMode {
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
-    final double LAUNCHER_CLOSE_TARGET_VELOCITY = 1500; //in ticks/second for the close goal.
-    final double LAUNCHER_CLOSE_MIN_VELOCITY = 1450; //minimum required to start a shot for close goal.
+    final double LAUNCHER_CLOSE_TARGET_VELOCITY = 1450; //in ticks/second for the close goal.
+    final double LAUNCHER_CLOSE_MIN_VELOCITY = 1400; //minimum required to start a shot for close goal.
 
     final double LAUNCHER_FAR_TARGET_VELOCITY = 1800; //Target velocity for far goal
     final double LAUNCHER_FAR_MIN_VELOCITY = 1600; //minimum required to start a shot for far goal.
@@ -58,8 +58,8 @@ public class GobuildaRobot extends OpMode {
     double launcherTarget = LAUNCHER_CLOSE_TARGET_VELOCITY; //These variables allow
     double launcherMin = LAUNCHER_CLOSE_MIN_VELOCITY;
 
-    final double LEFT_POSITION = 0.2962; //the left and right position for the diverter servo
-    final double RIGHT_POSITION = 0;
+    final double LEFT_POSITION = 0.4; //the left and right position for the diverter servo
+    final double RIGHT_POSITION = 0.6;
 
     // Declare OpMode members.
     private DcMotor leftFrontDrive = null;
@@ -184,7 +184,7 @@ public class GobuildaRobot extends OpMode {
          */
         //rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        diverter.setPosition(0);
+        diverter.setPosition(.4);
         leftFeeder.setPosition(.15);
         rightFeeder.setPosition(.15);
 
@@ -230,32 +230,34 @@ public class GobuildaRobot extends OpMode {
             rightLauncher.setVelocity(STOP_SPEED);
         }
 
-        if (gamepad1.dpadDownWasPressed()) {
-            switch (diverterDirection){
-                case LEFT:
-                    diverterDirection = DiverterDirection.RIGHT;
-                    diverter.setPosition(0);
-                    break;
-                case RIGHT:
-                    diverterDirection = DiverterDirection.LEFT;
-                    diverter.setPosition(.5);
-                    break;
-            }
+        if (gamepad1.dpadLeftWasPressed()) {
+            //switch (diverterDirection){
+            //case LEFT:
+            diverterDirection = DiverterDirection.LEFT;
+            diverter.setPosition(LEFT_POSITION);
+            //break;
         }
+        if (gamepad1.dpadRightWasPressed()) {
+                //case RIGHT:
+                    diverterDirection = DiverterDirection.RIGHT;
+                    diverter.setPosition(RIGHT_POSITION );
+                    //break;
+            }
+
 
         if (gamepad1.right_trigger > .5) {
             //switch (intakeState)
             //case ON:
             intakeState = IntakeState.ON;
             intake.setPower(.8);
-            conveyor.setPower(.8);
+            conveyor.setPower(.6);
             //break;
         }
         else if(gamepad1.x) {
                  //case OFF:
                     intakeState = IntakeState.ON;
-                    intake.setPower(-.7);
-                    conveyor.setPower(-.7);
+                    intake.setPower(-.5);
+                    conveyor.setPower(-.4);
                     //break;
             }
         else {

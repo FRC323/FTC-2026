@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -19,13 +22,13 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(name = "Main Auto", group = "Examples")
 
-public class auto2026 extends OpMode {
-    final double FEED_TIME_SECONDS = 1.0; //The feeder servos run this long when a shot is requested.
+public class auto2026<shotRequested> extends OpMode {
+    final double FEED_TIME_SECONDS = 0.8; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
 
     final double LAUNCHER_CLOSE_TARGET_VELOCITY = 1500; //in ticks/second for the close goal.
-    final double LAUNCHER_CLOSE_MIN_VELOCITY = 1450; //minimum required to start a shot for close goal.
+    final double LAUNCHER_CLOSE_MIN_VELOCITY = 1400; //minimum required to start a shot for close goal.
 
     final double LAUNCHER_FAR_TARGET_VELOCITY = 1800; //Target velocity for far goal
     final double LAUNCHER_FAR_MIN_VELOCITY = 1600; //minimum required to start a shot for far goal.
@@ -33,8 +36,13 @@ public class auto2026 extends OpMode {
     double launcherTarget = LAUNCHER_CLOSE_TARGET_VELOCITY; //These variables allow
     double launcherMin = LAUNCHER_CLOSE_MIN_VELOCITY;
 
-    final double LEFT_POSITION = 0.2962; //the left and right position for the diverter servo
-    final double RIGHT_POSITION = 0;
+    final double LEFT_POSITION = 0.4; //the left and right position for the diverter servo
+    final double RIGHT_POSITION = 0.6;
+    boolean leftShotRequested;
+    boolean rightShotRequested;
+    boolean leftShotComplete = FALSE;
+    boolean rightShotComplete = FALSE;
+
     // Declare OpMode members.
     private DcMotor leftFrontDrive = null;
     private DcMotor rightFrontDrive = null;
@@ -54,13 +62,13 @@ public class auto2026 extends OpMode {
 
     private enum LaunchState {
         IDLE,
-        IDLE2,
+
         SPIN_UP,
         LAUNCH,
         LAUNCHING,
     }
-    private auto2026.LaunchState leftLaunchState;
-    private auto2026.LaunchState rightLaunchState;
+    private  auto2026.LaunchState leftLaunchState;
+    private  auto2026.LaunchState rightLaunchState;
 
     private enum DiverterDirection {
         LEFT,
@@ -94,9 +102,9 @@ public class auto2026 extends OpMode {
     private int pathState;
 
     private final Pose startPose = new Pose(21, 123, Math.toRadians(324)); // Start Pose of our robot.
-    private final Pose scorePose = new Pose(25, 120, Math.toRadians(324)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
-    private final Pose pickup1Pose = new Pose(37, 121, Math.toRadians(0)); // Highest (First Set) of Artifacts from the Spike Mark.
-    private final Pose pickup2Pose = new Pose(43, 130, Math.toRadians(0)); // Middle (Second Set) of Artifacts from the Spike Mark.
+    private final Pose scorePose = new Pose(24, 119, Math.toRadians(324)); // Scoring Pose of our robot. It is facing the goal at a 135 degree angle.
+    private final Pose pickup1Pose = new Pose(53.532, 98.168, Math.toRadians(180)); // Highest (First Set) of Artifacts from the Spike Mark.
+    private final Pose pickup2Pose = new Pose(35.532, 98.168, Math.toRadians(180)); // Middle (Second Set) of Artifacts from the Spike Mark.
     private final Pose pickup3Pose = new Pose(49, 135, Math.toRadians(0)); // Lowest (Third Set) of Artifacts from the Spike Mark.
 
     private final Pose endPose = startPose; //new Pose(40, 35, Math.toRadians(0)); //ending Pose
@@ -119,14 +127,15 @@ public class auto2026 extends OpMode {
                 .build();
 
         /* This is our scorePickup1 PathChain. We are using a single path with a BezierLine, which is a straight line. */
-        scorePickup1 = follower.pathBuilder()
-                .addPath(new BezierLine(pickup1Pose, scorePose))
-                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), scorePose.getHeading())
+        grabPickup2 = follower.pathBuilder()
+                .addPath(new BezierLine(pickup1Pose, pickup2Pose))
+                .setLinearHeadingInterpolation(pickup1Pose.getHeading(), pickup2Pose.getHeading()).setVelocityConstraint(.2)
                 .build();
 
         /* This is our grabPickup2 PathChain. We are using a single path with a BezierLine, which is a straight line. */
+        int i = 5;
         grabPickup2 = follower.pathBuilder()
-                .addPath(new BezierLine(scorePose, pickup2Pose))
+                 .addPath(new BezierLine(scorePose, pickup2Pose))
                 .setLinearHeadingInterpolation(scorePose.getHeading(), pickup2Pose.getHeading())
                 .build();
 
@@ -160,93 +169,107 @@ public class auto2026 extends OpMode {
                 follower.followPath(scorePreload);
                 setPathState(1);
                 break;
+
             case 1:
-
-            /* You could check for
-            - Follower State: "if(!follower.isBusy()) {}"
-            - Time: "if(pathTimer.getElapsedTimeSeconds() > 1) {}"
-            - Robot Position: "if(follower.getPose().getX() > 36) {}"
-            */
-
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if (!follower.isBusy()) {
                     /* Score Preload */
-                    if (pathTimer.getElapsedTimeSeconds() < 9) {
-                        if(pathTimer.getElapsedTimeSeconds() > 0 && pathTimer.getElapsedTimeSeconds() <2) {
-                        launchLeft(true);}
-                    else if(pathTimer.getElapsedTimeSeconds() >3 && pathTimer.getElapsedTimeSeconds() < 5) {
-                        launchRight(true);}
-                        else if(pathTimer.getElapsedTimeSeconds() > 6 && pathTimer.getElapsedTimeSeconds() < 8){
-                            launchLeft(true);}
-                    } else {
-                        setPathState(2);
-                    }
+                    leftShotComplete = FALSE;
+                    leftShotRequested = TRUE;
+                    setPathState(2);
                 }
                 break;
-            case 2:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup1, true);
+                case 2:
+                        if (leftShotComplete) {
+                            leftShotComplete = FALSE;
+                            rightShotRequested = TRUE;
+                            setPathState(3);
+                        }
+                        break;
 
-                    setPathState(3);
-                }
-                break;
-            case 3:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Score Sample */
+                case 3:
+                        if (rightShotComplete) {
+                            rightShotComplete = FALSE;
+                            leftShotRequested = TRUE;
+                            setPathState(4);
+                        }
+                        break;
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup2, true);
-                    setPathState(8);
-                }
-                break;
-            case 4:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
+                 case 4:
+                         if (leftShotComplete) {
+                             leftShotComplete = FALSE;
+                              setPathState(5);
+                         }
+                         break;
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup2, true);
-                    setPathState(5);
-                }
-                break;
-            case 5:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Score Sample */
+                    case 5:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
+                        if (!follower.isBusy()) {
+                            intake.setPower(.8);  
+                            conveyor.setPower(.8);
+                            /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                            follower.followPath(grabPickup1, true);
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
-                    follower.followPath(grabPickup3, true);
-                    setPathState(6);
-                }
-                break;
-            case 6:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
-                if (!follower.isBusy()) {
-                    /* Grab Sample */
 
-                    /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
-                    follower.followPath(scorePickup3, true);
-                    setPathState(7);
+                             setPathState(6);
+
+                        }
+                        break;
+                    case 6:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                        if (!follower.isBusy()) {
+                           /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                            follower.followPath(grabPickup2, true);
+
+                            setPathState(7);
+                        }
+                        break;
+                    case 7:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup2Pose's position */
+                        if (!follower.isBusy()) {
+
+
+                            /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                            follower.setMaxPower(5);
+                            follower.followPath(scorePickup2, true);
+                            setPathState(11);
+                        }
+                        break;
+                    case 8:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                        if (!follower.isBusy()) {
+                            intake.setPower(.0);
+                            conveyor.setPower(.0);
+                            /* Since this is a pathChain, we can have Pedro hold the end point while we are grabbing the sample */
+                            follower.followPath(grabPickup3, true);
+                            setPathState(11);
+                        }
+                        break;
+                    case 9:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup3Pose's position */
+                        if (!follower.isBusy()) {
+                            /* Grab Sample */
+
+                            /* Since this is a pathChain, we can have Pedro hold the end point while we are scoring the sample */
+                            follower.followPath(scorePickup3, true);
+                            setPathState(9);
+                        }
+                        break;
+                    case 10:
+                        if (!follower.isBusy()) {
+                            follower.followPath(endPoint, true);
+                            setPathState(10);
+                        }
+                    case 11:
+                        /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
+                        if (!follower.isBusy()) {
+                            /* Set the state to a Case we won't use or define, so it just stops running an new paths */
+                            setPathState(-1);
+                        }
+                        break;
                 }
-                break;
-            case 7:
-                if (!follower.isBusy()) {
-                    follower.followPath(endPoint,true);
-                    setPathState(8);
-                }
-            case 8:
-                /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
-                if (!follower.isBusy()) {
-                    /* Set the state to a Case we won't use or define, so it just stops running an new paths */
-                    setPathState(-1);
-                }
-                break;
-        }
+
     }
 
     /**
@@ -266,58 +289,62 @@ public class auto2026 extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         autonomousPathUpdate();
-
+        leftUpdate();
+        rightUpdate();
+        
         // Feedback to Driver Hub for debugging
         telemetry.addData("path state", pathState);
+        telemetry.addData("path timer", pathTimer.getElapsedTimeSeconds());
         telemetry.addData("x", follower.getPose().getX());
         telemetry.addData("y", follower.getPose().getY());
         telemetry.addData("heading", follower.getPose().getHeading());
         telemetry.update();
     }
-    void launchLeft(boolean shotRequested) {
-        switch (leftLaunchState) {
-            case IDLE:
-                if (shotRequested) {
-                    leftLaunchState = auto2026.LaunchState.SPIN_UP;
-                    leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                    rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    void leftUpdate() {
+                switch (leftLaunchState) {
+                case IDLE:
+                    if (leftShotRequested) {
+                        leftLaunchState = auto2026.LaunchState.SPIN_UP;
+                        leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                        leftFeederTimer.reset();
+                    }
+                    break;
+                case SPIN_UP:
+                    leftLauncher.setVelocity(launcherTarget);
+                    rightLauncher.setVelocity(launcherTarget);
+                    if (leftLauncher.getVelocity() > launcherMin || leftFeederTimer.seconds() > 3) {
+                        leftLaunchState = auto2026.LaunchState.LAUNCH;
+                    }
+                    break;
+                case LAUNCH:
+                    //leftFeeder.setPower(FULL_SPEED);
                     leftFeederTimer.reset();
-                }
-                break;
-            case SPIN_UP:
-                leftLauncher.setVelocity(launcherTarget);
-                rightLauncher.setVelocity(launcherTarget);
-                if (leftLauncher.getVelocity() > launcherMin || leftFeederTimer.seconds() > 3) {
-                    leftLaunchState = auto2026.LaunchState.LAUNCH;
-                }
-                break;
-            case LAUNCH:
-                //leftFeeder.setPower(FULL_SPEED);
-                leftFeederTimer.reset();
-                leftFeeder.setPosition(.35);
-                leftLaunchState = auto2026.LaunchState.LAUNCHING;
-                break;
-            case LAUNCHING:
-               if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
-                   leftLaunchState = auto2026.LaunchState.IDLE;
-                   leftFeeder.setPosition(0.15);
-
-                   //leftFeeder.setPower(STOP_SPEED);
-                   leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                   rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                   leftLauncher.setPower(.6);
-                   rightLauncher.setPower(.6);
-               } else {
-                   shotRequested = false;
-               }
-                break;
+                    leftFeeder.setPosition(.35);
+                    leftLaunchState = auto2026.LaunchState.LAUNCHING;
+                    break;
+                case LAUNCHING:
+                    if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
+                        leftFeeder.setPosition(0.15);
+                        leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                        leftLauncher.setPower(.6);
+                        rightLauncher.setPower(.6);
+                        if (leftFeederTimer.seconds() > FEED_TIME_SECONDS + .5) {
+                            leftShotRequested = FALSE;
+                            leftShotComplete = TRUE;
+                            leftLaunchState = auto2026.LaunchState.IDLE;
+                        }
+                    }
+                    break;
+            }
         }
-    }
 
-    void launchRight(boolean shotRequested) {
+
+      void rightUpdate() {
         switch (rightLaunchState) {
             case IDLE:
-                if (shotRequested) {
+                if (rightShotRequested) {
                     rightLaunchState = auto2026.LaunchState.SPIN_UP;
                     leftLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                     rightLauncher.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -339,15 +366,16 @@ public class auto2026 extends OpMode {
                 break;
             case LAUNCHING:
                 if (rightFeederTimer.seconds() > FEED_TIME_SECONDS) {
-                    rightLaunchState = auto2026.LaunchState.IDLE;
                     rightFeeder.setPosition(0.18);
-                    //rightFeeder.setPower(STOP_SPEED);
                     leftLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     rightLauncher.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                     leftLauncher.setPower(.6);
                     rightLauncher.setPower(.6);
-                } else {
-                    shotRequested = false;
+                    if (rightFeederTimer.seconds() > FEED_TIME_SECONDS + .5) {
+                        rightShotRequested = FALSE;
+                        rightShotComplete = TRUE;
+                        rightLaunchState = auto2026.LaunchState.IDLE;
+                    }
                 }
                 break;
         }
@@ -421,7 +449,7 @@ public class auto2026 extends OpMode {
          */
         //rightFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        diverter.setPosition(0);
+        diverter.setPosition(.6);
         leftFeeder.setPosition(.15);
         rightFeeder.setPosition(.15);
 
